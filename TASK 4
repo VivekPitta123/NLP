@@ -1,0 +1,51 @@
+import fitz  # PyMuPDF
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+
+# Download required resources
+nltk.download('punkt')
+nltk.download('stopwords')
+
+def load_document_from_pdf(file_path):
+    text = ""
+    try:
+        with fitz.open(file_path) as doc:
+            for page in doc:
+                text += page.get_text()
+    except Exception as e:
+        print(f"Error reading PDF file: {e}")
+        return None
+    return text
+
+def tokenize_document(document):
+    tokens = word_tokenize(document)
+    # Keep only alphabetic tokens and convert to lowercase
+    return [word.lower() for word in tokens if word.isalpha()]
+
+def remove_stopwords(tokens):
+    stop_words = set(stopwords.words('english'))
+    return [word for word in tokens if word not in stop_words]
+
+def find_morphology(tokens):
+    fdist = FreqDist(tokens)
+    return fdist.most_common()
+
+# Update this to your actual file path
+document_path = "/content/UNIT-1 notes (1).pdf"
+
+# Load and process the document
+document = load_document_from_pdf(document_path)
+
+if document:
+    tokens = tokenize_document(document)
+    tokens_without_stopwords = remove_stopwords(tokens)
+    morphology = find_morphology(tokens_without_stopwords)
+
+    print("Morphology of the document:")
+    # Print only the top 20 words for brevity
+    for word, frequency in morphology[:20]:
+        print(f"{word}: {frequency}")
+else:
+    print("Could not process the document.")
